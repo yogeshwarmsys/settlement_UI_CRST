@@ -64,21 +64,21 @@ class _DriverSettlementsAppsPageState extends State<DriverSettlementsAppsPage> {
     setState(() {
       isScreenOnBottom = false;
     });
-    return false;
+    return isScreenOnBottom;
   }
 
   _onUpdateScroll(ScrollMetrics metrics) {
     setState(() {
       isScreenOnBottom = true;
     });
-    return true;
+    return isScreenOnBottom;
   }
 
   _onEndScroll(ScrollMetrics metrics) {
     setState(() {
       isScreenOnBottom = true;
     });
-    return true;
+    return isScreenOnBottom;
   }
 
   @override
