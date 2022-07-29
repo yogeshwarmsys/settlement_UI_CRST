@@ -37,8 +37,7 @@ class _DriverSettlementsAppsPageState extends State<DriverSettlementsAppsPage> {
 
   _scrollListener() {
     if (_scrollController.offset >=
-            _scrollController.position.maxScrollExtent &&
-        !_scrollController.position.outOfRange) {
+        _scrollController.position.maxScrollExtent) {
       setState(() {
         print('Reached bottom');
         isScreenOnBottom = true;
@@ -46,8 +45,7 @@ class _DriverSettlementsAppsPageState extends State<DriverSettlementsAppsPage> {
       });
     }
     if (_scrollController.offset <=
-            _scrollController.position.minScrollExtent &&
-        !_scrollController.position.outOfRange) {
+        _scrollController.position.minScrollExtent) {
       setState(() {
         print('Reached top');
         isScreenOnBottom = false;
@@ -60,6 +58,27 @@ class _DriverSettlementsAppsPageState extends State<DriverSettlementsAppsPage> {
     _scrollController.dispose();
     isScreenOnBottom = false;
     super.dispose();
+  }
+
+  _onStartScroll(ScrollMetrics metrics) {
+    setState(() {
+      isScreenOnBottom = false;
+    });
+    return false;
+  }
+
+  _onUpdateScroll(ScrollMetrics metrics) {
+    setState(() {
+      isScreenOnBottom = true;
+    });
+    return true;
+  }
+
+  _onEndScroll(ScrollMetrics metrics) {
+    setState(() {
+      isScreenOnBottom = true;
+    });
+    return true;
   }
 
   @override
@@ -96,9 +115,13 @@ class _DriverSettlementsAppsPageState extends State<DriverSettlementsAppsPage> {
                       right: size.width * 0.04),
                   child: Column(
                     children: [
-                      _totalEarningWidget(size),
+                      !isScreenOnBottom
+                          ? _totalEarningWidget(size)
+                          : const SizedBox.shrink(),
                       SizedBox(height: size.height * 0.02),
-                      FilteredSettlementsWidgetPage(size: size),
+                      !isScreenOnBottom
+                          ? FilteredSettlementsWidgetPage(size: size)
+                          : const SizedBox.shrink(),
                       SizedBox(height: size.height * 0.02),
                       Padding(
                         padding: const EdgeInsets.all(4.0),
@@ -112,31 +135,46 @@ class _DriverSettlementsAppsPageState extends State<DriverSettlementsAppsPage> {
                         ),
                       ),
                       SizedBox(height: size.height * 0.01),
-                      Container(
-                        decoration: const BoxDecoration(
-                          borderRadius: BorderRadius.only(
-                            topLeft: Radius.circular(10),
-                            topRight: Radius.circular(10),
+                      NotificationListener<ScrollNotification>(
+                        onNotification: (scrollNotification) {
+                          if (scrollNotification is ScrollStartNotification) {
+                            _onStartScroll(scrollNotification.metrics);
+                          } else if (scrollNotification
+                              is ScrollUpdateNotification) {
+                            _onUpdateScroll(scrollNotification.metrics);
+                          } else if (scrollNotification
+                              is ScrollEndNotification) {
+                            _onEndScroll(scrollNotification.metrics);
+                          }
+                          return false;
+                        },
+                        child: Container(
+                          decoration: const BoxDecoration(
+                            borderRadius: BorderRadius.only(
+                              topLeft: Radius.circular(10),
+                              topRight: Radius.circular(10),
+                            ),
+                            color: Colors.white,
                           ),
-                          color: Colors.white,
+                          height: size.height * 0.45,
+                          child: ListView.builder(
+                            //controller: _scrollController,
+                            padding: EdgeInsets.all(size.width * 0.01),
+                            addAutomaticKeepAlives: true,
+                            itemCount: settlemenetListJson.length,
+                            itemBuilder: (BuildContext context, int index) {
+                              return RecentSettlementsCard(
+                                date: settlemenetListJson[index]['date'],
+                                price: settlemenetListJson[index]['price'],
+                                gross: settlemenetListJson[index]['gross'],
+                                deductions: settlemenetListJson[index]
+                                    ['deductions'],
+                                size: size,
+                              );
+                            },
+                          ),
                         ),
-                        height: size.height * 0.45,
-                        child: ListView.builder(
-                          controller: _scrollController,
-                          padding: EdgeInsets.all(size.width * 0.01),
-                          itemCount: settlemenetListJson.length,
-                          itemBuilder: (BuildContext context, int index) {
-                            return RecentSettlementsCard(
-                              date: settlemenetListJson[index]['date'],
-                              price: settlemenetListJson[index]['price'],
-                              gross: settlemenetListJson[index]['gross'],
-                              deductions: settlemenetListJson[index]
-                                  ['deductions'],
-                              size: size,
-                            );
-                          },
-                        ),
-                      )
+                      ),
                     ],
                   )),
         ],
@@ -184,56 +222,69 @@ class _DriverSettlementsAppsPageState extends State<DriverSettlementsAppsPage> {
   }
 
   _totalEarningWidget(size) {
-    return Container(
-      height: size.height * 0.1,
-      width: size.height * 0.8,
-      decoration: const BoxDecoration(
-        color: Colors.white,
-        borderRadius: BorderRadius.all(Radius.circular(10)),
-      ),
-      child: Padding(
-        padding: EdgeInsets.all(size.width * 0.01),
-        child: Row(
-          mainAxisAlignment: MainAxisAlignment.spaceBetween,
-          crossAxisAlignment: CrossAxisAlignment.center,
-          children: [
-            Padding(
-              padding: EdgeInsets.symmetric(
-                vertical: size.height * 0.01,
-                horizontal: size.width * 0.02,
-              ),
-              child: Column(
-                mainAxisAlignment: MainAxisAlignment.spaceAround,
-                crossAxisAlignment: CrossAxisAlignment.start,
-                children: const [
-                  Text(
-                    'Total 2023',
-                    style: TextStyle(
-                      color: Color(0xff004F62),
-                      fontSize: 16,
-                      fontWeight: FontWeight.w600,
+    return TweenAnimationBuilder<double>(
+      // 1. add a Duration
+      duration: const Duration(milliseconds: 1000),
+      // 2. add a Tween
+      tween: Tween(begin: 4.0, end: 1.0),
+      builder: (context, value, child) {
+        // 5. apply some transform to the given child
+        return Transform.translate(
+          offset: Offset(value * 200 - 200, 0),
+          child: child,
+        );
+      },
+      child: Container(
+        height: size.height * 0.1,
+        width: size.height * 0.8,
+        decoration: const BoxDecoration(
+          color: Colors.white,
+          borderRadius: BorderRadius.all(Radius.circular(10)),
+        ),
+        child: Padding(
+          padding: EdgeInsets.all(size.width * 0.01),
+          child: Row(
+            mainAxisAlignment: MainAxisAlignment.spaceBetween,
+            crossAxisAlignment: CrossAxisAlignment.center,
+            children: [
+              Padding(
+                padding: EdgeInsets.symmetric(
+                  vertical: size.height * 0.01,
+                  horizontal: size.width * 0.02,
+                ),
+                child: Column(
+                  mainAxisAlignment: MainAxisAlignment.spaceAround,
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: const [
+                    Text(
+                      'Total 2023',
+                      style: TextStyle(
+                        color: Color(0xff004F62),
+                        fontSize: 16,
+                        fontWeight: FontWeight.w600,
+                      ),
                     ),
-                  ),
-                  Text(
-                    'Earnings To Date',
-                    style: TextStyle(
-                      color: Color(0xff004F62),
-                      fontSize: 16,
-                      fontWeight: FontWeight.w600,
+                    Text(
+                      'Earnings To Date',
+                      style: TextStyle(
+                        color: Color(0xff004F62),
+                        fontSize: 16,
+                        fontWeight: FontWeight.w600,
+                      ),
                     ),
-                  ),
-                ],
+                  ],
+                ),
               ),
-            ),
-            const Text(
-              '\$ 55,235.23',
-              style: TextStyle(
-                color: Color(0xff004F62),
-                fontSize: 24,
-                fontWeight: FontWeight.w500,
-              ),
-            )
-          ],
+              const Text(
+                '\$ 55,235.23',
+                style: TextStyle(
+                  color: Color(0xff004F62),
+                  fontSize: 24,
+                  fontWeight: FontWeight.w500,
+                ),
+              )
+            ],
+          ),
         ),
       ),
     );
@@ -245,48 +296,61 @@ class _DriverSettlementsAppsPageState extends State<DriverSettlementsAppsPage> {
 
     return Column(
       children: [
-        Row(
-          children: [
-            Image.asset(
-              'assets/icons/Search@3x.png',
-              height: size.height * 0.05,
-            ),
-            const Spacer(),
-            Padding(
-              padding: const EdgeInsets.all(8.0),
-              child: Column(
-                mainAxisAlignment: MainAxisAlignment.spaceAround,
-                crossAxisAlignment: CrossAxisAlignment.start,
-                children: const [
-                  Text(
-                    'Total 2023',
-                    style: TextStyle(
-                      color: Color(0xff004F62),
-                      fontSize: 16,
-                      fontWeight: FontWeight.w600,
-                    ),
-                  ),
-                  Text(
-                    'Earnings To Date',
-                    style: TextStyle(
-                      color: Color(0xff004F62),
-                      fontSize: 16,
-                      fontWeight: FontWeight.w600,
-                    ),
-                  ),
-                ],
+        TweenAnimationBuilder<double>(
+          // 1. add a Duration
+          duration: const Duration(milliseconds: 500),
+          // 2. add a Tween
+          tween: Tween(begin: 2.0, end: 1.0),
+          builder: (context, value, child) {
+            // 5. apply some transform to the given child
+            return Transform.translate(
+              offset: Offset(value * 200 - 200, 0),
+              child: child,
+            );
+          },
+          child: Row(
+            children: [
+              Image.asset(
+                'assets/icons/Search@3x.png',
+                height: size.height * 0.05,
               ),
-            ),
-            SizedBox(height: size.width * 0.02),
-            const Text(
-              '\$ 55,235.23',
-              style: TextStyle(
-                color: Color(0xff004F62),
-                fontSize: 24,
-                fontWeight: FontWeight.w500,
+              const Spacer(),
+              Padding(
+                padding: const EdgeInsets.all(8.0),
+                child: Column(
+                  mainAxisAlignment: MainAxisAlignment.spaceAround,
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: const [
+                    Text(
+                      'Total 2023',
+                      style: TextStyle(
+                        color: Color(0xff004F62),
+                        fontSize: 16,
+                        fontWeight: FontWeight.w600,
+                      ),
+                    ),
+                    Text(
+                      'Earnings To Date',
+                      style: TextStyle(
+                        color: Color(0xff004F62),
+                        fontSize: 16,
+                        fontWeight: FontWeight.w600,
+                      ),
+                    ),
+                  ],
+                ),
               ),
-            )
-          ],
+              SizedBox(height: size.width * 0.02),
+              const Text(
+                '\$ 55,235.23',
+                style: TextStyle(
+                  color: Color(0xff004F62),
+                  fontSize: 24,
+                  fontWeight: FontWeight.w500,
+                ),
+              )
+            ],
+          ),
         ),
         SizedBox(height: size.height * 0.02),
         Padding(
@@ -314,6 +378,8 @@ class _DriverSettlementsAppsPageState extends State<DriverSettlementsAppsPage> {
             height: size.height * 0.62,
             child: ListView.builder(
               controller: _scrollController,
+              addAutomaticKeepAlives: true,
+              shrinkWrap: true,
               padding: EdgeInsets.all(size.width * 0.01),
               itemCount: settlemenetListJson.length,
               itemBuilder: (BuildContext context, int index) {
