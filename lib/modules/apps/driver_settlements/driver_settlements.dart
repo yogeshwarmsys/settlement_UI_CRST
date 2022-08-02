@@ -5,6 +5,8 @@ import 'package:settlements_animation_ui/modules/apps/driver_settlements/recent_
 import 'package:settlements_animation_ui/modules/apps/driver_settlements/search_settlement_widget.dart';
 
 import '../../../main.dart';
+import '../../../utils/colors.dart';
+import 'filtered_settlements.dart';
 
 bool isScreenOnBottom = false;
 
@@ -88,6 +90,18 @@ class _DriverSettlementsAppsPageState extends State<DriverSettlementsAppsPage> {
       backgroundColor: Colors.grey[300],
       appBar: AppBar(
         centerTitle: true,
+        backgroundColor: ColorUtils.appBar,
+        actions: [
+          Row(
+            mainAxisAlignment: MainAxisAlignment.spaceEvenly,
+            children: [
+              IconButton(
+                  onPressed: () {}, icon: const Icon(Icons.chevron_left)),
+              IconButton(
+                  onPressed: () {}, icon: const Icon(Icons.chevron_right)),
+            ],
+          )
+        ],
         leading: IconButton(
           icon: const Text(
             'Close',
@@ -290,6 +304,20 @@ class _DriverSettlementsAppsPageState extends State<DriverSettlementsAppsPage> {
     );
   }
 
+  _filter() {
+    int startDate = 1432339200;
+    int endDate = 1484265600;
+    Navigator.push(
+      context,
+      MaterialPageRoute(
+        builder: (context) => FilteredSettlementsAppsPage(
+          startDate: startDate,
+          endDate: endDate,
+        ),
+      ),
+    );
+  }
+
 // Load Animated widget positions
   Widget _loadAnimationWidget(var size) {
     print('entering animation widget');
@@ -310,9 +338,12 @@ class _DriverSettlementsAppsPageState extends State<DriverSettlementsAppsPage> {
           },
           child: Row(
             children: [
-              Image.asset(
-                'assets/icons/Search@3x.png',
-                height: size.height * 0.05,
+              InkWell(
+                onTap: _filter,
+                child: Image.asset(
+                  'assets/icons/Search@3x.png',
+                  height: size.height * 0.05,
+                ),
               ),
               const Spacer(),
               Padding(

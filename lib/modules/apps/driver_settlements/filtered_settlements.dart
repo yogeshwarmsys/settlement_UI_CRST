@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:settlements_animation_ui/modules/apps/driver_settlements/recent_settlement_card.dart';
 import 'package:intl/intl.dart';
 
+import '../../../utils/colors.dart';
 
 class FilteredSettlementsAppsPage extends StatefulWidget {
   const FilteredSettlementsAppsPage({
@@ -49,7 +50,19 @@ class _FilteredSettlementsAppsPageState
     return Scaffold(
       backgroundColor: Colors.grey[100],
       appBar: AppBar(
+        backgroundColor: ColorUtils.appBar,
         centerTitle: true,
+        actions: [
+          Row(
+            mainAxisAlignment: MainAxisAlignment.spaceEvenly,
+            children: [
+              IconButton(
+                  onPressed: () {}, icon: const Icon(Icons.chevron_left)),
+              IconButton(
+                  onPressed: () {}, icon: const Icon(Icons.chevron_right)),
+            ],
+          )
+        ],
         leading: IconButton(
           icon: const Text(
             'Close',
@@ -104,7 +117,9 @@ class _FilteredSettlementsAppsPageState
 
   _backToRecentSettlement() {
     return InkWell(
-      onTap: () {},
+      onTap: () {
+        Navigator.pop(context);
+      },
       child: Container(
         alignment: Alignment.centerLeft,
         child: const Text(

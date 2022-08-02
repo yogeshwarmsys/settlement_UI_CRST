@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:settlements_animation_ui/bottom_nav_item/apps_page.dart';
 
+import '../utils/colors.dart';
 
 class HomePage extends StatefulWidget {
   const HomePage({Key? key, required this.title}) : super(key: key);
@@ -47,10 +48,12 @@ class _HomePageState extends State<HomePage> {
       ),
       appBar: AppBar(
         centerTitle: false,
+        backgroundColor: ColorUtils.appBar,
         title: Container(
           alignment: Alignment.centerRight,
           child: Row(
             children: [
+              Spacer(),
               Image.asset(
                 'assets/icons/image_10@3x.png',
                 width: MediaQuery.of(context).size.width * 0.3,
@@ -62,6 +65,10 @@ class _HomePageState extends State<HomePage> {
                 width: MediaQuery.of(context).size.width * 0.01,
               ),
               SizedBox(width: MediaQuery.of(context).size.width * 0.01),
+              const Text(
+                'ON',
+                style: TextStyle(fontSize: 28, fontWeight: FontWeight.normal),
+              ),
             ],
           ),
         ),
